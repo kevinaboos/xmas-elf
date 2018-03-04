@@ -72,7 +72,7 @@ impl<'a> ElfFile<'a> {
     }
 
     pub fn get_shstr(&self, index: u32) -> Result<&'a str, &'static str> {
-        self.get_shstr_table().map(|shstr_table| read_str(&shstr_table[(index as usize)..]))
+        self.get_shstr_table().and_then(|shstr_table| read_str(&shstr_table[(index as usize)..]))
     }
 
     pub fn get_string(&self, index: u32) -> Result<&'a str, &'static str> {
@@ -80,12 +80,12 @@ impl<'a> ElfFile<'a> {
         if try!(header.get_type()) != sections::ShType::StrTab {
             return Err("expected .strtab to be StrTab");
         }
-        Ok(read_str(&header.raw_data(self)[(index as usize)..]))
+        read_str(&header.raw_data(self)[(index as usize)..])
     }
 
     pub fn get_dyn_string(&self, index: u32) -> Result<&'a str, &'static str> {
         let header = try!(self.find_section_by_name(".dynstr").ok_or("no .dynstr section"));
-        Ok(read_str(&header.raw_data(self)[(index as usize)..]))
+        read_str(&header.raw_data(self)[(index as usize)..])
     }
 
     // This is really, stupidly slow. Not sure how to fix that, perhaps keeping
@@ -148,7 +148,10 @@ impl<'a> Extensions<'a> for ElfFile<'a> {
         self.find_section_by_name(".gnu_debuglink")
             .map(|header| header.raw_data(self))
             .and_then(|data| {
-                let file = read_str(data);
+                let file = match read_str(data) {
+                    Ok(f) => f,
+                    _ => { return None; }
+                };
                 // Round up to the nearest multiple of 4.
                 let checksum_pos = ((file.len() + 4) / 4) * 4;
                 let checksum: u32 = *read(&data[checksum_pos..]);

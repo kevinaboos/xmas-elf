@@ -491,7 +491,7 @@ impl NoteHeader {
     }
 
     pub fn name<'a>(&'a self, input: &'a [u8]) -> &'a str {
-        let result = read_str(input);
+        let result = read_str(input).expect("failed reading input str");
         // - 1 is due to null terminator
         assert_eq!(result.len(), (self.name_size - 1) as usize);
         result
