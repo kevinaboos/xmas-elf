@@ -9,7 +9,7 @@ keywords = ["elf", "parser", "binary"]
 exclude = ["test-data/*"]
 
 [dependencies]
-zero = { version = "0.1.3", git = "https://github.com/kevinaboos/zero.git" }
+zero = { version = "0.1.3", git = "https://github.com/theseus-os/zero.git" }
 flate2 = { version = "1", optional = true }
 
 [features]
